@@ -11,10 +11,14 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text userNameText;
+    public Text HighScore;
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    public int m_Points;
+    public int m_HPoints;
     
     private bool m_GameOver = false;
 
@@ -24,6 +28,9 @@ public class MainManager : MonoBehaviour
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
+
+        userNameText.text = GameManager.instance.userName;
+        HighScore.text = $"BestScore: {GameManager.instance.highscore} : {GameManager.instance.highName}";
         
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
@@ -44,17 +51,24 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                m_Started = true;
-                float randomDirection = Random.Range(-1.0f, 1.0f);
-                Vector3 forceDir = new Vector3(randomDirection, 1, 0);
-                forceDir.Normalize();
+                 m_Started = true;
+                 float randomDirection = Random.Range(-1.0f, 1.0f);
+                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
+                 forceDir.Normalize();
 
-                Ball.transform.SetParent(null);
-                Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
+                 Ball.transform.SetParent(null);
+                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
         else if (m_GameOver)
         {
+            if(m_Points > GameManager.instance.highscore)
+            {
+                GameManager.instance.highscore = m_Points;
+                GameManager.instance.highName = GameManager.instance.userName;
+
+                GameManager.instance.Save();
+            }
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -66,7 +80,9 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        
     }
+
 
     public void GameOver()
     {
